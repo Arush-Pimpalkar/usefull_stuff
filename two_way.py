@@ -7,10 +7,10 @@ import zipfile
 import io
 import cgi
 
-# Assign the appropriate port value and folder path
+# declare port and path
 PORT = 8011
 PATH = 'C:/Users/ArushWindows/OneDrive/Desktop/Sharing_Folder'
-# Change the directory to access the files desktop
+
 desktop = os.path.join(PATH)
 os.chdir(desktop)
 
@@ -162,7 +162,8 @@ class CustomHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
             folder_path = os.path.join(desktop, folder_name)
 
             if os.path.isdir(folder_path):
-                # Create a zip file in memory
+                # makes zip of folder
+                # in memory. Should it be in memory????????????????????????????????????????????
                 zip_buffer = io.BytesIO()
                 with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_file:
                     for root, dirs, files in os.walk(folder_path):
@@ -192,17 +193,15 @@ class CustomHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
             environ={'REQUEST_METHOD': 'POST'}
         )
 
-        # Extract the file field from the form
         file_field = form['file']
 
-        # Check if the file field is present
+        # checking if the file field is present or not
         if file_field.filename:
-            # Save the file
+            # saving the file
             file_path = os.path.join(os.getcwd(), file_field.filename)
             with open(file_path, 'wb') as output_file:
                 output_file.write(file_field.file.read())
 
-            # Send response back to the client
             self.send_response(200)
             self.send_header('Content-type', 'text/html')
             self.end_headers()
@@ -212,14 +211,13 @@ class CustomHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
             self.end_headers()
             self.wfile.write(b"No file was uploaded.<br><a href='/'>Go back</a>")
 
-# Finding the IP address of the PC
+
 hostname = socket.gethostname()
 s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 s.connect(("8.8.8.8", 80))
 IP = "http://" + s.getsockname()[0] + ":" + str(PORT)
 s.close()
 
-# Creating the HTTP request and serving the folder in the specified PORT
 with socketserver.TCPServer(("", PORT), CustomHTTPRequestHandler) as httpd:
     print("Serving at port", PORT)
     print("Type this in your Browser", IP)
