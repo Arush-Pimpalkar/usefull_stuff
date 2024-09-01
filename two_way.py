@@ -6,10 +6,31 @@ import urllib
 import zipfile
 import io
 import cgi
+import tkinter as tk
+from tkinter import filedialog
+import webbrowser
+import time
 
-# declare port and path
-PORT = 8011
-PATH = 'C:/Users/ArushWindows/OneDrive/Desktop/Sharing_Folder'
+def select_folder():
+    root = tk.Tk()
+    root.withdraw()  # Hide the root window
+    folder_selected = filedialog.askdirectory()  # Open the dialog and return the selected folder
+    return folder_selected
+
+
+def find_free_port():
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        s.bind(('', 0))  # Bind to a free port provided by the OS
+        return s.getsockname()[1]  # Return the port number
+
+# declare path and folder name
+PORT = find_free_port()
+PATH = select_folder()
+
+# Check if the user selected a folder
+if not PATH:
+    print("No folder selected. Exiting...")
+    exit()
 
 desktop = os.path.join(PATH)
 os.chdir(desktop)
@@ -26,6 +47,7 @@ class CustomHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
             self.wfile.write(b"""
                 <html>
                 <head>
+                    <title>FileTransferer</title>
                     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
                     <style>
                         body {
@@ -217,6 +239,8 @@ s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 s.connect(("8.8.8.8", 80))
 IP = "http://" + s.getsockname()[0] + ":" + str(PORT)
 s.close()
+
+webbrowser.open(IP)
 
 with socketserver.TCPServer(("", PORT), CustomHTTPRequestHandler) as httpd:
     print("Serving at port", PORT)
